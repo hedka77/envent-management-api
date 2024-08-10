@@ -11,5 +11,5 @@ Route::get('/user', function(Request $request) {
 
 Route::apiResource('events', EventController::class);
 Route::apiResource('events.attendees', AttendeeController::class)
-     ->scoped([ 'attendee' => 'event' ]); //Attendees resources are ALWAYS part of an Event. Route model binding: Laravel will automatically load it by looking for attendees of a parent event
+     ->scoped()->except('update'); //Attendees resources are ALWAYS part of an Event. Route model binding: Laravel will automatically load it by looking for attendees of a parent event
 
