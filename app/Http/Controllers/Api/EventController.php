@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Controller as BaseController;
 use App\Http\Resources\EventResource;
 use App\Http\Traits\CanLoadRelationships;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use JetBrains\PhpStorm\NoReturn;
 
-class EventController extends Controller
+class EventController extends BaseController implements HasMiddleware
 {
     use CanLoadRelationships;
 
@@ -21,11 +24,16 @@ class EventController extends Controller
         $this->relations = [ 'user', 'attendees', 'attendees.user' ];
     }
 
+    public static function middleware(): array
+    {
+        return [ new Middleware('auth:sanctum', except: [ 'index', 'show' ]), ];
+
+    }
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
     {
         //return Event::all();
         //return EventResource::collection(Event::all());
@@ -40,38 +48,34 @@ class EventController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): \Illuminate\Http\JsonResponse|EventResource
     {
-        try{
-            $validatedData = $request->validate([
-                                                'name'        => 'required|string|max:255',
-                                                'description' => 'nullable|string',
-                                                'start_time'  => 'required|date',
-                                                'end_time'    => 'required|date|after:start_time',
-                                                ]);
+        try {
+            $validatedData = $request->validate([ 'name'        => 'required|string|max:255',
+                                                  'description' => 'nullable|string',
+                                                  'start_time'  => 'required|date',
+                                                  'end_time'    => 'required|date|after:start_time', ]);
 
-            $event = Event::create([
-                                   ...$validatedData,
-                                   'user_id' => 1
-                                   ]);
+            $event = Event::create([ ...$validatedData,
+                                     'user_id' => $request->user()->id, ]);
 
             //return $event;
             //return new EventResource($event);
             return new EventResource($this->loadRelationships($event));
 
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             // Log the error
             Log::error($e->getMessage());
 
             // Return the error response
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json([ 'error' => $e->getMessage() ], 500);
         }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Event $event)
+    public function show(Event $event): EventResource
     {
         //return $event;
         //$event->load('user', 'attendees');
@@ -82,7 +86,7 @@ class EventController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Event $event)
+    public function update(Request $request, Event $event): EventResource
     {
         $event->update($request->validate([ 'name'        => 'sometimes|string|max:255',
                                             'description' => 'nullable|string',
@@ -97,7 +101,7 @@ class EventController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Event $event)
+    public function destroy(Event $event): \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
     {
         $event->delete();
 
