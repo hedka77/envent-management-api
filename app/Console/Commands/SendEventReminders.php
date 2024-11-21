@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Event;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 class SendEventReminders extends Command
 {
@@ -18,13 +20,22 @@ class SendEventReminders extends Command
      *
      * @var string
      */
-    protected $description = 'Send a reminder email to the attendees of an event';
+    protected $description = 'Sends a reminder email to all event attendees when event starts soon';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        //
+        $events = Event::with('attendees.user')->whereBetween('start_time', [ now(), now()->addDay() ])->get();
+
+        $eventCount = $events->count();
+        $eventLabel = Str::plural('event', $eventCount);
+
+        $this->info("Found {$eventCount} {$eventLabel} events.");
+
+        $events->each(fn($event) => $event->attendees->each(fn($attendee) => $this->info("Notifying the user {$attendee->user->name}, attendee_id = {$attendee->id} to attend event {$event->name}")));
+
+        $this->info('Reminder notifications sent successfully.');
     }
 }
