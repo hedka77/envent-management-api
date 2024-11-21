@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller as BaseController;
 use App\Http\Resources\EventResource;
 use App\Http\Traits\CanLoadRelationships;
 use App\Models\Event;
+use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -29,8 +30,8 @@ class EventController extends BaseController implements HasMiddleware
 
     public static function middleware(): array
     {
-        return [ new Middleware('auth:sanctum', except: [ 'index', 'show' ]), ];
-
+        return [ new Middleware('auth:sanctum', except: [ 'index', 'show']),
+                 new Middleware('auth.optional', only: [ 'show' ]) ];
     }
 
     /**
@@ -38,13 +39,16 @@ class EventController extends BaseController implements HasMiddleware
      */
     public function index(): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
     {
+        //$this->authorize('viewAny', Event::class);
+        Gate::authorize('viewAny', Event::class);
+
         //return Event::all();
         //return EventResource::collection(Event::all());
-        $query = $this->loadRelationships(Event::query());
 
         //$query     = Event::query();
         //return EventResource::collection(Event::with('user')->paginate(10));
 
+        $query = $this->loadRelationships(Event::query());
         return EventResource::collection($query->latest()->paginate(10));
     }
 
@@ -80,6 +84,9 @@ class EventController extends BaseController implements HasMiddleware
      */
     public function show(Event $event): EventResource
     {
+        Log::debug('Authenticated user in controller:', [ 'user' => auth()->user() ]);
+        Gate::authorize('view', $event);
+
         //return $event;
         //$event->load('user', 'attendees');
         //return new EventResource($event);
@@ -88,7 +95,6 @@ class EventController extends BaseController implements HasMiddleware
 
     /**
      * Update the specified resource in storage.
-     * @throws AuthorizationException
      */
     public function update(Request $request, Event $event): EventResource
     {
@@ -96,7 +102,7 @@ class EventController extends BaseController implements HasMiddleware
             abort(403, 'You are not allowed to update this event.');
         }*/
 
-        Gate::authorize('update-event', $event);
+        //Gate::authorize('update-event', $event);
         //$this->authorize('update-event', $event);
 
         $event->update($request->validate([ 'name'        => 'sometimes|string|max:255',
