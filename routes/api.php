@@ -6,15 +6,17 @@ use App\Http\Controllers\Api\EventController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function(Request $request) {
+Route::get('/user', function (Request $request)
+{
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::post('/login', [ AuthController::class, 'login' ]);
-Route::post('/logout', [ AuthController::class, 'logout' ])->middleware('auth:sanctum');
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 Route::apiResource('events', EventController::class);
 Route::apiResource('events.attendees', AttendeeController::class)
-     ->scoped()
-     ->except('update'); //Attendees resources are ALWAYS part of an Event. Route model binding: Laravel will automatically load it by looking for attendees of a parent event
+     ->scoped(['attendee' => 'event'])
+     ->except('update'); //Scoped means that attendees resources are ALWAYS part of an Event. Route model binding: Laravel will
+// automatically load it by looking for attendees of a parent event
 

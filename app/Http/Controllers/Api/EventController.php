@@ -25,13 +25,15 @@ class EventController extends BaseController implements HasMiddleware
 
     public function __construct()
     {
-        $this->relations = [ 'user', 'attendees', 'attendees.user' ];
+        $this->relations = ['user', 'attendees', 'attendees.user'];
     }
 
     public static function middleware(): array
     {
-        return [ new Middleware('auth:sanctum', except: [ 'index', 'show']),
-                 new Middleware('auth.optional', only: [ 'show' ]) ];
+        return [
+            new Middleware('auth:sanctum', except: ['index', 'show']),
+            new Middleware('auth.optional', only: ['show'])
+        ];
     }
 
     /**
@@ -58,13 +60,17 @@ class EventController extends BaseController implements HasMiddleware
     public function store(Request $request): \Illuminate\Http\JsonResponse|EventResource
     {
         try {
-            $validatedData = $request->validate([ 'name'        => 'required|string|max:255',
-                                                  'description' => 'nullable|string',
-                                                  'start_time'  => 'required|date',
-                                                  'end_time'    => 'required|date|after:start_time', ]);
+            $validatedData = $request->validate([
+                'name'        => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'start_time'  => 'required|date',
+                'end_time'    => 'required|date|after:start_time',
+            ]);
 
-            $event = Event::create([ ...$validatedData,
-                                     'user_id' => $request->user()->id, ]);
+            $event = Event::create([
+                ...$validatedData,
+                'user_id' => $request->user()->id,
+            ]);
 
             //return $event;
             //return new EventResource($event);
@@ -75,7 +81,7 @@ class EventController extends BaseController implements HasMiddleware
             Log::error($e->getMessage());
 
             // Return the error response
-            return response()->json([ 'error' => $e->getMessage() ], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -84,7 +90,7 @@ class EventController extends BaseController implements HasMiddleware
      */
     public function show(Event $event): EventResource
     {
-        Log::debug('Authenticated user in controller:', [ 'user' => auth()->user() ]);
+        Log::debug('Authenticated user in controller:', ['user' => auth()->user()]);
         Gate::authorize('view', $event);
 
         //return $event;
@@ -105,10 +111,12 @@ class EventController extends BaseController implements HasMiddleware
         //Gate::authorize('update-event', $event);
         //$this->authorize('update-event', $event);
 
-        $event->update($request->validate([ 'name'        => 'sometimes|string|max:255',
-                                            'description' => 'nullable|string',
-                                            'start_time'  => 'sometimes|date',
-                                            'end_time'    => 'sometimes|date|after:start_time' ]));
+        $event->update($request->validate([
+            'name'        => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'start_time'  => 'sometimes|date',
+            'end_time'    => 'sometimes|date|after:start_time'
+        ]));
 
         //return $event;
         //return new EventResource($event);
@@ -118,8 +126,8 @@ class EventController extends BaseController implements HasMiddleware
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Event $event): \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
-    {
+    public function destroy(Event $event
+    ): \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory {
         $event->delete();
 
         //return response()->json(['message' => 'Event deleted successfully'], 200);
