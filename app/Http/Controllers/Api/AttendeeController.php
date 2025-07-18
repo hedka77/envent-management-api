@@ -14,7 +14,7 @@ use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 
-class AttendeeController extends Controller implements HasMiddleware
+class AttendeeController extends Controller //implements HasMiddleware
 {
     use CanLoadRelationships;
     use AuthorizesRequests;
@@ -26,10 +26,10 @@ class AttendeeController extends Controller implements HasMiddleware
         $this->relations = ['user'];
     }
 
-    public static function middleware(): array
+    /*public static function middleware(): array
     {
         return [new Middleware('auth:sanctum', except: ['index', 'show', 'update']),];
-    }
+    }*/
 
     public function index(Event $event)
     {
@@ -43,6 +43,7 @@ class AttendeeController extends Controller implements HasMiddleware
 
     public function store(Request $request, Event $event)
     {
+        Gate::authorize('create', Attendee::class);
         $attendee = $this->loadRelationships($event->attendees()->create(['user_id' => 1]));
 
         return new AttendeeResource($attendee);
@@ -51,6 +52,7 @@ class AttendeeController extends Controller implements HasMiddleware
 
     public function show(Event $event, Attendee $attendee)
     {
+        Gate::authorize('view', $attendee);
         return new AttendeeResource($this->loadRelationships($attendee));
     }
 
@@ -61,7 +63,7 @@ class AttendeeController extends Controller implements HasMiddleware
         Log::debug('Event Data:', ['event' => $event]);
         Log::debug('Attendee Data:', ['attendee' => $attendee]);
 
-        //Gate::authorize('delete-attendee', [$event, $attendee]);
+        Gate::authorize('delete', $attendee);
         $attendee->delete();
 
         return response(null, 204);

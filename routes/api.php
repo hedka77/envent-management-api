@@ -14,8 +14,24 @@ Route::get('/user', function (Request $request)
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-Route::apiResource('events', EventController::class);
-Route::apiResource('events.attendees', AttendeeController::class)
-     ->scoped()
-     ->except('update'); //Scoped means that attendees resources are ALWAYS part of an Event. Route model binding: Laravel will
+//Route::apiResource('events', EventController::class);
+//Route::apiResource('events.attendees', AttendeeController::class)
+//     ->scoped()
+//     ->except('update'); //Scoped means that attendees resources are ALWAYS part of an Event. Route model binding: Laravel will
 // automatically load it by looking for attendees of a parent event
+
+// Public routes
+Route::apiResource('events', EventController::class)->only(['index', 'show']);
+
+// Protected routes
+Route::apiResource('events', EventController::class)->only(['store', 'update', 'destroy'])->middleware(['auth:sanctum', 'throttle:api']);
+
+// Protected routes
+Route::apiResource('events.attendees', AttendeeController::class)->scoped()->only(['store', 'destroy'])->middleware([
+    'auth:sanctum',
+    'throttle:api'
+]);
+
+
+// Public routes
+Route::apiResource('events.attendees', AttendeeController::class)->scoped()->only(['index', 'show']);

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller as BaseController;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\EventResource;
 use App\Http\Traits\CanLoadRelationships;
 use App\Models\Event;
@@ -16,10 +16,10 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use JetBrains\PhpStorm\NoReturn;
 
-class EventController extends BaseController implements HasMiddleware
+class EventController extends Controller //implements HasMiddleware
 {
     use CanLoadRelationships;
-    use AuthorizesRequests;
+    //use AuthorizesRequests;
 
     private readonly array $relations;
 
@@ -28,13 +28,13 @@ class EventController extends BaseController implements HasMiddleware
         $this->relations = ['user', 'attendees', 'attendees.user'];
     }
 
-    public static function middleware(): array
+    /*public static function middleware(): array
     {
         return [
             new Middleware('auth:sanctum', except: ['index', 'show']),
             new Middleware('auth.optional', only: ['show'])
         ];
-    }
+    }*/
 
     /**
      * Display a listing of the resource.
@@ -59,6 +59,7 @@ class EventController extends BaseController implements HasMiddleware
      */
     public function store(Request $request): \Illuminate\Http\JsonResponse|EventResource
     {
+        Gate::authorize('create', Event::class);
         try {
             $validatedData = $request->validate([
                 'name'        => 'required|string|max:255',
@@ -108,7 +109,7 @@ class EventController extends BaseController implements HasMiddleware
             abort(403, 'You are not allowed to update this event.');
         }*/
 
-        //Gate::authorize('update-event', $event);
+        Gate::authorize('update', $event);
         //$this->authorize('update-event', $event);
 
         $event->update($request->validate([
@@ -126,8 +127,9 @@ class EventController extends BaseController implements HasMiddleware
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Event $event
-    ): \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory {
+    public function destroy(Event $event): \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
+    {
+        Gate::authorize('delete', $event);
         $event->delete();
 
         //return response()->json(['message' => 'Event deleted successfully'], 200);
