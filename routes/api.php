@@ -16,7 +16,6 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 
 Route::apiResource('events', EventController::class);
 Route::apiResource('events.attendees', AttendeeController::class)
-     ->scoped(['attendee' => 'event'])
+     ->scoped()
      ->except('update'); //Scoped means that attendees resources are ALWAYS part of an Event. Route model binding: Laravel will
 // automatically load it by looking for attendees of a parent event
-

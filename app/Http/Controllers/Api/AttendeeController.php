@@ -23,12 +23,12 @@ class AttendeeController extends Controller implements HasMiddleware
 
     public function __construct()
     {
-        $this->relations = [ 'user' ];
+        $this->relations = ['user'];
     }
 
     public static function middleware(): array
     {
-        return [ new Middleware('auth:sanctum', except: [ 'index', 'show', 'update' ] ) , ];
+        return [new Middleware('auth:sanctum', except: ['index', 'show', 'update']),];
     }
 
     public function index(Event $event)
@@ -43,7 +43,7 @@ class AttendeeController extends Controller implements HasMiddleware
 
     public function store(Request $request, Event $event)
     {
-        $attendee = $this->loadRelationships($event->attendees()->create([ 'user_id' => 1 ]));
+        $attendee = $this->loadRelationships($event->attendees()->create(['user_id' => 1]));
 
         return new AttendeeResource($attendee);
     }
