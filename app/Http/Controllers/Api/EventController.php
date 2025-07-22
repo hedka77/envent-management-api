@@ -59,7 +59,7 @@ class EventController extends Controller //implements HasMiddleware
      */
     public function store(Request $request): \Illuminate\Http\JsonResponse|EventResource
     {
-        Gate::authorize('create', Event::class);
+        //Gate::authorize('create', Event::class);
         try {
             $validatedData = $request->validate([
                 'name'        => 'required|string|max:255',
@@ -92,7 +92,7 @@ class EventController extends Controller //implements HasMiddleware
     public function show(Event $event): EventResource
     {
         Log::debug('Authenticated user in controller:', ['user' => auth()->user()]);
-        Gate::authorize('view', $event);
+        //Gate::authorize('view', $event);
 
         //return $event;
         //$event->load('user', 'attendees');
@@ -105,11 +105,13 @@ class EventController extends Controller //implements HasMiddleware
      */
     public function update(Request $request, Event $event): EventResource
     {
-        /*if(Gate::denies('update-event', $event)) {
+        /*if (! Gate::allows('update-event', $event)) {
             abort(403, 'You are not allowed to update this event.');
         }*/
 
-        Gate::authorize('update', $event);
+        //Gate::authorize('update-event', $event); //Este método arroja automáticamente una excepción si el usuario no tiene permitido
+        // ejecutar la operación
+
         //$this->authorize('update-event', $event);
 
         $event->update($request->validate([
@@ -129,7 +131,7 @@ class EventController extends Controller //implements HasMiddleware
      */
     public function destroy(Event $event): \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Routing\ResponseFactory
     {
-        Gate::authorize('delete', $event);
+        //Gate::authorize('delete', $event);
         $event->delete();
 
         //return response()->json(['message' => 'Event deleted successfully'], 200);

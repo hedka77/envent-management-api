@@ -29,19 +29,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('update-event', static function (User $user, Event $event) {
+        /*Gate::define('update-event', static function (User $user, Event $event)
+        {
             return $user->id === $event->user_id;
         });
 
-        /*Gate::define('delete-attendee', static function (User $user, Event $event, Attendee $attendee) {
+        Gate::define('delete-attendee', static function (User $user, Event $event, Attendee $attendee)
+        {
             Log::debug('Gate Inputs:', ['user' => $user, 'event' => $event, 'attendee' => $attendee]);
             return $user->id === $event->user_id || $user->id === $attendee->user_id;
         });*/
 
-        RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by(
-                $request->user()?->id ?: $request->ip()
-            );
+        RateLimiter::for('api', function (Request $request)
+        {
+            return Limit::perMinute(60)->by($request->user()?->id ? : $request->ip());
         });
 
         //Route::aliasMiddleware('auth.optional', OptionalAuthentication::class);

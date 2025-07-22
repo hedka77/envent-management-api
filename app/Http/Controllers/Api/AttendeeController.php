@@ -33,7 +33,7 @@ class AttendeeController extends Controller //implements HasMiddleware
 
     public function index(Event $event)
     {
-        Gate::authorize('viewAny', Attendee::class);
+        //Gate::authorize('viewAny', Attendee::class);
 
         $attendees = $this->loadRelationships($event->attendees()->latest());
 
@@ -43,7 +43,7 @@ class AttendeeController extends Controller //implements HasMiddleware
 
     public function store(Request $request, Event $event)
     {
-        Gate::authorize('create', Attendee::class);
+        //Gate::authorize('create', Attendee::class);
         $attendee = $this->loadRelationships($event->attendees()->create(['user_id' => 1]));
 
         return new AttendeeResource($attendee);
@@ -52,7 +52,7 @@ class AttendeeController extends Controller //implements HasMiddleware
 
     public function show(Event $event, Attendee $attendee)
     {
-        Gate::authorize('view', $attendee);
+        //Gate::authorize('view', $attendee);
         return new AttendeeResource($this->loadRelationships($attendee));
     }
 
@@ -63,7 +63,7 @@ class AttendeeController extends Controller //implements HasMiddleware
         Log::debug('Event Data:', ['event' => $event]);
         Log::debug('Attendee Data:', ['attendee' => $attendee]);
 
-        Gate::authorize('delete', $attendee);
+        //Gate::authorize('delete-attendee', [$event, $attendee]);
         $attendee->delete();
 
         return response(null, 204);

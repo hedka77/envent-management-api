@@ -14,7 +14,7 @@ class EventPolicy
      */
     public function viewAny(?User $user): bool
     {
-        return true;
+        return false;
     }
 
     /**
