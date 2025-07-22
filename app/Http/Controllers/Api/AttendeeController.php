@@ -44,7 +44,7 @@ class AttendeeController extends Controller //implements HasMiddleware
     public function store(Request $request, Event $event)
     {
         //Gate::authorize('create', Attendee::class);
-        $attendee = $this->loadRelationships($event->attendees()->create(['user_id' => 1]));
+        $attendee = $this->loadRelationships($event->attendees()->create(['user_id' => $request->user()->id]));
 
         return new AttendeeResource($attendee);
     }

@@ -28,19 +28,23 @@ class SendEventReminders extends Command
      */
     public function handle()
     {
-        $events = Event::with('attendees.user')->whereBetween('start_time', [ now(), now()->addDays(15) ])->limit(5)->get();
+        $events = Event::with('attendees.user')->whereBetween('start_time', [now(), now()->addDays(15)])->limit(5)->get();
 
         $eventCount = $events->count();
         $eventLabel = Str::plural('event', $eventCount);
 
-        $this->info("Found {$eventCount} {$eventLabel} events.");
+        $this->info("Found {$eventCount} {$eventLabel}");
 
-        $events->each(
-            fn($event) => $event->attendees->each(
-                //fn($attendee) => $this->info("Notifying the user {$attendee->user->name}, attendee_id = {$attendee->id} to attend event {$event->name})"
-                fn($attendee) => $attendee->user->notify(
-                    new EventReminderNotification($event)
-                )
+        $i = 0;
+        $events->each(fn($event)
+            => $event->attendees->each(
+
+                //fn($attendee)
+                // => $this->info("Notifying the user {$attendee->user->name}, attendee_id = {$attendee->id} to attend event
+                // {$event->name}")
+
+            fn($attendee)
+                => $attendee->user->notify(new EventReminderNotification($event))
             )
         );
 
